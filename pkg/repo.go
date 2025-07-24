@@ -1,0 +1,53 @@
+package release
+
+import (
+	"log"
+	"errors"
+	git "github.com/go-git/go-git/v6"
+	"github.com/go-git/go-git/v6/plumbing"
+	"github.com/go-git/go-git/v6/plumbing/object"
+)
+
+func getHead(repo *git.Repository, branch string) *object.Commit {
+	refName := plumbing.NewBranchReferenceName(branch)
+	ref, err := repo.Reference(refName, true)
+	if err != nil {
+		log.Fatalf("Failed to get reference for branch %s: %v", branch, err)
+	}
+	headCommit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		log.Fatalf("Failed to get commit object: %v", err)
+	}
+	return headCommit
+}
+
+func buildTagCommitMap(repo *git.Repository, tagFormat string) map[plumbing.Hash]string {
+	tagMap := make(map[plumbing.Hash]string)
+	tags, _ := repo.Tags()
+	tags.ForEach(func(ref *plumbing.Reference) error {
+		if validTagFormat(ref.Name().Short(), tagFormat) {
+	    	hash := ref.Hash()
+	    	tagObj, err := repo.TagObject(hash) // lightweight tag
+	    	if err == nil {
+	    	    // Annotated tag
+	    	    hash = tagObj.Target
+	    	}
+	    	tagMap[hash] = ref.Name().Short()
+		}
+	    return nil
+	})
+	return tagMap
+}
+
+func getLatestRelease(head *object.Commit, tagMap map[plumbing.Hash]string)  (tag string, childCommits []*object.Commit) {
+	commitIterator := object.NewCommitPreorderIter(head, nil, nil)
+	commitIterator.ForEach(func(c *object.Commit) error {
+		childCommits = append(childCommits, c)
+	    if tagString, ok := tagMap[c.Hash]; ok {
+			tag = tagString
+			return errors.New("break iterator - found tag")
+	    }
+	    return nil
+	})
+	return tag, childCommits
+}
