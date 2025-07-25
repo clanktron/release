@@ -37,7 +37,7 @@ func Release() {
 
 	log.Println("creating release commit and tagging...")
 	if CreateRelease(repo, newVersion.String(), config.Git) != nil {
-		log.Fatalf("failed to properly create release commit/tag: %s - exiting...", err.Error())
+		log.Fatalf("failed to properly create release commit/tag - exiting...")
 	}
 
 	fmt.Print(generateChangelog(commitsSinceRelease))
