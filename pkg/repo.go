@@ -76,6 +76,7 @@ func createReleaseCommit(repo *git.Repository, version Version, tagFormat string
 		return &object.Commit{}, err
 	}
 	commitHash, err := w.Commit(fmt.Sprintf("chore(release): %s", version.String()), &git.CommitOptions{
+		AllowEmptyCommits: true,
 		Author: &object.Signature{
 			Name:  gitConfig.Author,
 			Email: gitConfig.Email,
