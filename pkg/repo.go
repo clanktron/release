@@ -77,7 +77,7 @@ func CreateRelease(repo *git.Repository, tag string, gitConfig GitConfig) error 
 		return fmt.Errorf("error checking tag: %v", err)
 	}
 	w, err := repo.Worktree()
-	if err != nil {
+	if err != nil || w == nil {
 		return fmt.Errorf("error getting worktree: %v", err)
 	}
 	err = w.AddWithOptions(&git.AddOptions{All: true})
