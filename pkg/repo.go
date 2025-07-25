@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"path"
 	git "github.com/go-git/go-git/v6"
 	"github.com/go-git/go-git/v6/plumbing"
 	"github.com/go-git/go-git/v6/plumbing/object"
@@ -69,13 +70,20 @@ func getLatestRelease(head *object.Commit, tagMap map[plumbing.Hash]string, tagF
 	return version, childCommits
 }
 
-func CreateRelease(repo *git.Repository, tag string, gitConfig GitConfig) error {
-	_, err := repo.Tag(tag)
-	if err == nil {
-		return fmt.Errorf("tag %s already exists, aborting release", tag)
-	} else if err != plumbing.ErrReferenceNotFound {
-		return fmt.Errorf("error checking tag: %v", err)
+// returns nil if the tag does not exist
+func tagError(repo *git.Repository, tag string) error {
+	_, err := repo.Reference(plumbing.ReferenceName(path.Join("refs", "tags", tag)), false)
+	switch err {
+	case plumbing.ErrReferenceNotFound:
+		return nil
+	case nil:
+		return fmt.Errorf("tag already exists")
+	default:
+		return err
 	}
+}
+
+func CreateRelease(repo *git.Repository, tag string, gitConfig GitConfig) error {
 	w, err := repo.Worktree()
 	if err != nil || w == nil {
 		return fmt.Errorf("error getting worktree: %v", err)
