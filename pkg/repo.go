@@ -71,7 +71,7 @@ func getLatestRelease(head *object.Commit, tagMap map[plumbing.Hash]string, tagF
 }
 
 // returns nil if the tag does not exist
-func tagError(repo *git.Repository, tag string) error {
+func validateTag(repo *git.Repository, tag string) error {
 	_, err := repo.Reference(plumbing.ReferenceName(path.Join("refs", "tags", tag)), false)
 	switch err {
 	case plumbing.ErrReferenceNotFound:

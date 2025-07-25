@@ -27,7 +27,7 @@ func Release() {
 
 	changeType := parseSemanticReleaseChangeType(commitsSinceRelease)
 	newVersion := updateVersion(currentVersion, changeType)
-	if err := tagError(repo, newVersion.String()); err != nil {
+	if err := validateTag(repo, newVersion.String()); err != nil {
 		log.Fatalf("error validating new tag against repo: %v", err)
 	}
 
