@@ -16,7 +16,7 @@ func Release() {
 		log.Fatalf("Failed to open repository: %v", err)
 	}
 
-	config := parseConfigFile(DEFAULT_CONFIG_FILE)
+	config := parseConfigFile("")
 	if !workingTreeClean(repo) {
 		log.Fatalf("uncommitted changes detected, exiting...")
 	}
