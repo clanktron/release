@@ -104,10 +104,7 @@ func createReleaseCommit(w *git.Worktree, tag string, gitConfig GitConfig) (plum
 			When:  time.Now(),
 		},
 	})
-	if err != nil {
-		return plumbing.ObjectID{}, err
-	}
-	return commitHash, nil
+	return commitHash, err
 }
 
 func createReleaseTag(repo *git.Repository, tag string, commitHash plumbing.ObjectID, config GitConfig) (*plumbing.Reference, error) {
