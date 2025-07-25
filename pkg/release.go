@@ -22,8 +22,7 @@ func Release() {
 	}
 
 	log.Println("getting latest release...")
-	tag, commitsSinceRelease := getLatestRelease(getHead(repo, config.ReleaseBranch), buildTagCommitMap(repo, config.TagFormat))
-	currentVersion := parseVersionFromTag(tag, config.TagFormat)
+	currentVersion, commitsSinceRelease := getLatestRelease(getHead(repo, config.ReleaseBranch), buildTagCommitMap(repo, config.TagFormat), config.TagFormat)
 	log.Printf("current version is %s\n", currentVersion)
 
 	changeType := parseSemanticReleaseChangeType(commitsSinceRelease)
@@ -37,8 +36,7 @@ func Release() {
 	}
 
 	log.Println("creating release commit and tagging...")
-	_, err = createReleaseCommit(repo, newVersion, config.TagFormat, config.Git)
-	if err != nil {
+	if CreateRelease(repo, newVersion.String(), config.Git) != nil {
 		log.Fatalf("failed to properly create release commit/tag: %s - exiting...", err.Error())
 	}
 

@@ -53,29 +53,50 @@ func buildTagCommitMap(repo *git.Repository, tagFormat string) map[plumbing.Hash
 	return tagMap
 }
 
-func getLatestRelease(head *object.Commit, tagMap map[plumbing.Hash]string)  (tag string, childCommits []*object.Commit) {
+func getLatestRelease(head *object.Commit, tagMap map[plumbing.Hash]string, tagFormat string)  (version Version, childCommits []*object.Commit) {
 	commitIterator := object.NewCommitPreorderIter(head, nil, nil)
 	commitIterator.ForEach(func(c *object.Commit) error {
 		childCommits = append(childCommits, c)
 	    if tagString, ok := tagMap[c.Hash]; ok {
-			tag = tagString
-			return errors.New("break iterator - found tag")
+			currentVersion, err := parseVersionFromTag(tagString, tagFormat)
+			if err == nil {
+				version = currentVersion
+				return errors.New("break iterator - found valid release tag")
+			}
 	    }
 	    return nil
 	})
-	return tag, childCommits
+	return version, childCommits
 }
 
-func createReleaseCommit(repo *git.Repository, version Version, tagFormat string, gitConfig GitConfig) (*object.Commit, error) {
+func CreateRelease(repo *git.Repository, tag string, gitConfig GitConfig) error {
+	_, err := repo.Tag(tag)
+	if err == nil {
+		return fmt.Errorf("tag %s already exists, aborting release", tag)
+	} else if err != plumbing.ErrReferenceNotFound {
+		return fmt.Errorf("error checking tag: %v", err)
+	}
 	w, err := repo.Worktree()
 	if err != nil {
-		return &object.Commit{}, err
+		return fmt.Errorf("error getting worktree: %v", err)
 	}
 	err = w.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
-		return &object.Commit{}, err
+		return fmt.Errorf("error staging files: %v", err)
 	}
-	commitHash, err := w.Commit(fmt.Sprintf("chore(release): %s", version.String()), &git.CommitOptions{
+	commitHash, err := createReleaseCommit(w, tag, gitConfig)
+	if err != nil {
+		return fmt.Errorf("error creating release commit: %v", err)
+	}
+	_, err = createReleaseTag(repo, tag, commitHash, gitConfig)
+	if err != nil {
+		return fmt.Errorf("error tagging commit: %v", err)
+	}
+	return nil
+}
+
+func createReleaseCommit(w *git.Worktree, tag string, gitConfig GitConfig) (plumbing.ObjectID, error) {
+	commitHash, err := w.Commit(fmt.Sprintf("chore(release): %s", tag), &git.CommitOptions{
 		AllowEmptyCommits: true,
 		Author: &object.Signature{
 			Name:  gitConfig.Author,
@@ -84,24 +105,19 @@ func createReleaseCommit(repo *git.Repository, version Version, tagFormat string
 		},
 	})
 	if err != nil {
-		return &object.Commit{}, err
+		return plumbing.ObjectID{}, err
 	}
-	// TODO: use version and tagFormat to construct tag
-	tagName := version.String()
-	_, err = repo.CreateTag(tagName, commitHash, &git.CreateTagOptions{
+	return commitHash, nil
+}
+
+func createReleaseTag(repo *git.Repository, tag string, commitHash plumbing.ObjectID, config GitConfig) (*plumbing.Reference, error) {
+	ref, err := repo.CreateTag(tag, commitHash, &git.CreateTagOptions{
 		Tagger: &object.Signature{
-			Name:  gitConfig.Author,
-			Email: gitConfig.Email,
+			Name:  config.Author,
+			Email: config.Email,
 			When:  time.Now(),
 		},
-		Message: "Release " + tagName,
+		Message: "Release " + tag,
 	})
-	if err != nil {
-		return &object.Commit{}, err
-	}
-	commit, err := repo.CommitObject(commitHash)
-	if err != nil {
-		return &object.Commit{}, err
-	}
-	return commit, nil
+	return ref, err
 }
