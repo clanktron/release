@@ -21,7 +21,7 @@ func (s semverChangeType) String() string {
 func parseSemanticReleaseChangeType(commits []*object.Commit) semverChangeType {
 	changeType := noop
 	for _, commit := range commits {
-		commitChangeType := parseSemanticCommitChangeType(commit)
+		commitChangeType := parseSemanticVersionChangeType(commit)
 		if commitChangeType > changeType {
 			changeType = commitChangeType
 		}
@@ -29,7 +29,8 @@ func parseSemanticReleaseChangeType(commits []*object.Commit) semverChangeType {
 	return changeType
 }
 
-func parseSemanticCommitChangeType(commit *object.Commit) semverChangeType {
+
+func parseSemanticVersionChangeType(commit *object.Commit) semverChangeType {
 	if strings.Contains(commit.Message, "fix") {
 		return patch
 	} else if strings.Contains(commit.Message, "feat") {
