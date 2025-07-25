@@ -2,7 +2,10 @@ module release
 
 go 1.24.4
 
-require github.com/go-git/go-git/v6 v6.0.0-20250722095407-db22bf1ac608
+require (
+	github.com/go-git/go-git/v6 v6.0.0-20250722095407-db22bf1ac608
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	dario.cat/mergo v1.0.1 // indirect

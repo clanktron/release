@@ -1,12 +1,26 @@
 package release
 
 import (
-	"log"
 	"errors"
+	"fmt"
+	"log"
+	"time"
 	git "github.com/go-git/go-git/v6"
 	"github.com/go-git/go-git/v6/plumbing"
 	"github.com/go-git/go-git/v6/plumbing/object"
 )
+
+func workingTreeClean(repo *git.Repository) bool {
+    worktree, err := repo.Worktree()
+    if err != nil {
+        log.Fatalf("failed to get worktree: %v", err)
+    }
+    status, err := worktree.Status()
+    if err != nil {
+        log.Fatalf("failed to get status: %v", err)
+    }
+    return status.IsClean()
+}
 
 func getHead(repo *git.Repository, branch string) *object.Commit {
 	refName := plumbing.NewBranchReferenceName(branch)
@@ -50,4 +64,43 @@ func getLatestRelease(head *object.Commit, tagMap map[plumbing.Hash]string)  (ta
 	    return nil
 	})
 	return tag, childCommits
+}
+
+func createReleaseCommit(repo *git.Repository, version Version, tagFormat string, gitConfig GitConfig) (*object.Commit, error) {
+	w, err := repo.Worktree()
+	if err != nil {
+		return &object.Commit{}, err
+	}
+	err = w.AddWithOptions(&git.AddOptions{All: true})
+	if err != nil {
+		return &object.Commit{}, err
+	}
+	commitHash, err := w.Commit(fmt.Sprintf("chore(release): %s", version.String()), &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  gitConfig.Author,
+			Email: gitConfig.Email,
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		return &object.Commit{}, err
+	}
+	// TODO: use version and tagFormat to construct tag
+	tagName := version.String()
+	_, err = repo.CreateTag(tagName, commitHash, &git.CreateTagOptions{
+		Tagger: &object.Signature{
+			Name:  gitConfig.Author,
+			Email: gitConfig.Email,
+			When:  time.Now(),
+		},
+		Message: "Release " + tagName,
+	})
+	if err != nil {
+		return &object.Commit{}, err
+	}
+	commit, err := repo.CommitObject(commitHash)
+	if err != nil {
+		return &object.Commit{}, err
+	}
+	return commit, nil
 }
