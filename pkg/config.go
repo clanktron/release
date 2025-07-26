@@ -2,7 +2,6 @@ package release
 
 import (
 	"gopkg.in/yaml.v3"
-	"log"
 	"os"
 )
 
@@ -28,22 +27,18 @@ var DefaultConfig = Config{
 	VersionCommand: "",
 }
 
-func parseConfigFile(configFile string) Config {
+func parseConfigFile(configFile string) (Config, error) {
 	config := DefaultConfig
-	if configFile == "" {
-		log.Printf("no config file - using defaults...")
-		return config
-	}
 	_, err := os.Stat(configFile)
 	if err != nil {
-		log.Fatalf("failed to parse config file")
+		return config, err
 	}
 	configFileBytes, err := os.ReadFile(configFile)
 	if err != nil {
-		log.Fatalf("failed to parse config file")
+		return config, err
 	}
-	if yaml.Unmarshal(configFileBytes, &config) != nil {
-		log.Fatalf("failed to parse config file")
+	if err := yaml.Unmarshal(configFileBytes, &config); err != nil {
+		return config, err
 	}
-	return config
+	return config, nil
 }

@@ -3,7 +3,6 @@ package release
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 	"path"
 	git "github.com/go-git/go-git/v6"
@@ -11,32 +10,31 @@ import (
 	"github.com/go-git/go-git/v6/plumbing/object"
 )
 
-func workingTreeClean(repo *git.Repository) bool {
+func workingTreeClean(repo *git.Repository) error {
     worktree, err := repo.Worktree()
     if err != nil {
-        log.Fatalf("failed to get worktree: %v", err)
+        return err
     }
     status, err := worktree.Status()
     if err != nil {
-        log.Fatalf("failed to get status: %v", err)
+        return err
     }
-    return status.IsClean()
+	if status.IsClean() {
+		return nil
+	}
+    return fmt.Errorf("working tree is unclean")
 }
 
-func getHead(repo *git.Repository, branch string) *object.Commit {
+func getCurrentHead(repo *git.Repository, branch string) (*object.Commit, error) {
 	refName := plumbing.NewBranchReferenceName(branch)
 	ref, err := repo.Reference(refName, true)
 	if err != nil {
-		log.Fatalf("Failed to get reference for branch %s: %v", branch, err)
+		return &object.Commit{}, err
 	}
-	headCommit, err := repo.CommitObject(ref.Hash())
-	if err != nil {
-		log.Fatalf("Failed to get commit object: %v", err)
-	}
-	return headCommit
+	return repo.CommitObject(ref.Hash())
 }
 
-func buildTagCommitMap(repo *git.Repository, tagFormat string) map[plumbing.Hash]string {
+func buildTagMap(repo *git.Repository, tagFormat string) map[plumbing.Hash]string {
 	tagMap := make(map[plumbing.Hash]string)
 	tags, _ := repo.Tags()
 	tags.ForEach(func(ref *plumbing.Reference) error {
@@ -54,7 +52,8 @@ func buildTagCommitMap(repo *git.Repository, tagFormat string) map[plumbing.Hash
 	return tagMap
 }
 
-func getLatestRelease(head *object.Commit, tagMap map[plumbing.Hash]string, tagFormat string)  (version Version, childCommits []*object.Commit) {
+func getLatestRelease(repo *git.Repository, head *object.Commit, tagFormat string)  (version Version, childCommits []*object.Commit) {
+	tagMap := buildTagMap(repo, tagFormat)
 	commitIterator := object.NewCommitPreorderIter(head, nil, nil)
 	commitIterator.ForEach(func(c *object.Commit) error {
 		childCommits = append(childCommits, c)
