@@ -17,7 +17,7 @@ func Release(configFile string) {
 	config := DefaultConfig
 	if configFile != "" {
 		log.Printf("sourcing config file %s...", configFile)
-		config, err = parseConfigFile(configFile)
+		config, err = LoadConfig(configFile)
 		if err != nil {
 			log.Fatalf("error sourcing config file: %s", err.Error())
 		}

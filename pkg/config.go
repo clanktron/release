@@ -6,15 +6,15 @@ import (
 )
 
 type Config struct {
-	ReleaseBranch  string
-	TagFormat      string
-	Git            GitConfig
-	VersionCommand string
+    ReleaseBranch  string    `yaml:"releaseBranch"`
+    TagFormat      string    `yaml:"tagFormat"`
+    Git            GitConfig `yaml:"git"`
+    VersionCommand string    `yaml:"versionCommand"`
 }
 
 type GitConfig struct {
-	Author string
-	Email  string
+    Author string `yaml:"author"`
+    Email  string `yaml:"email"`
 }
 
 var DefaultConfig = Config{
@@ -27,17 +27,29 @@ var DefaultConfig = Config{
 	VersionCommand: "",
 }
 
-func parseConfigFile(configFile string) (Config, error) {
+func LoadConfig(path string) (Config, error) {
+	data, err := readConfigFile(path)
+	if err != nil {
+		return Config{}, err
+	}
+	return parseConfig(data)
+}
+
+func readConfigFile(path string) (bytes []byte, err error) {
+	_, err = os.Stat(path)
+	if err != nil {
+		return bytes, err
+	}
+	bytes, err = os.ReadFile(path)
+	if err != nil {
+		return bytes, err
+	}
+	return bytes, nil
+}
+
+func parseConfig(data []byte) (Config, error) {
 	config := DefaultConfig
-	_, err := os.Stat(configFile)
-	if err != nil {
-		return config, err
-	}
-	configFileBytes, err := os.ReadFile(configFile)
-	if err != nil {
-		return config, err
-	}
-	if err := yaml.Unmarshal(configFileBytes, &config); err != nil {
+	if err := yaml.Unmarshal(data, &config); err != nil {
 		return config, err
 	}
 	return config, nil
