@@ -11,8 +11,12 @@ $(BINARY):
 check: test lint ## Test and lint
 
 .PHONY: test
-test: ## Run go tests
+unit-test: ## Run go unit tests
 	go test $(TEST_FLAGS) ./...
+
+.PHONY: test
+test: ## Run full test suite
+	go test $(TEST_FLAGS) -tags=integration ./...
 
 .PHONY: lint
 lint: ## Run go vet and staticcheck against codebase
