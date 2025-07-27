@@ -11,14 +11,15 @@ const CHANGELOG_TEMPLATE = `Changelog:
 `
 
 func generateChangelog(commits []*object.Commit) string {
-	var sb strings.Builder
+	var lines []string
 	for _, commit := range commits {
-		line := fmt.Sprintf("- %s (%s, %s)\n", 
-			commit.Message, 
-			commit.Author.Name, 
+		line := fmt.Sprintf("- %s (%s, %s)",
+			strings.TrimSpace(commit.Message),
+			commit.Author.Name,
 			commit.Author.When.Format("2006-01-02"),
 		)
-		sb.WriteString(line)
+		lines = append(lines, line)
 	}
-	return strings.Replace(CHANGELOG_TEMPLATE, "{{COMMITS}}", sb.String(), 1)
+	changelog := strings.Join(lines, "\n")
+	return strings.Replace(CHANGELOG_TEMPLATE, "{{COMMITS}}", changelog, 1)
 }
