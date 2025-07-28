@@ -11,6 +11,7 @@ A CLI utility for generating [semantically versioned](https://semver.org) releas
 * Generates a changelog
 * (Optionally) runs a version update script
 * Commits and tags a new release
+* New version will be sent to stdout
 
 ## Configuration
 
