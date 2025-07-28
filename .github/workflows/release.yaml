@@ -3,7 +3,8 @@ name: release
 on:
   push:
     branches:
-    - "main"
+      - "main"
+
 jobs:
   release:
     name: Conditionally Release
@@ -28,17 +29,21 @@ jobs:
 
       - name: Attempt Release
         id: release
-        run: echo "version=$(./release)" >> $GITHUB_OUTPUT
-
-      # TODO: Only run the remaining steps if this step exited with 0
+        run: |
+          version=$(./release)
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Push Release Commit
+        if: steps.release.outcome == 'success'
         run: |
           git push
 
-      - name: Create Github Release
+      - name: Create GitHub Release
+        if: steps.release.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ steps.release.outputs.value }}
+          gh release create ${{ steps.release.outputs.version }}
 
       # - name: Set up Docker Buildx
       #   uses: docker/setup-buildx-action@v3
