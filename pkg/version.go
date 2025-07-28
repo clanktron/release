@@ -19,8 +19,11 @@ func updateVersion(version Version, changeType semverChangeType) Version {
 	switch changeType {
 	case major:
 		version.Major++
+		version.Major = 0
+		version.Patch = 0
 	case minor:
 		version.Minor++
+		version.Patch = 0
 	case patch:
 		version.Patch++
 	}
