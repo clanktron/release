@@ -1,0 +1,58 @@
+name: release
+
+on:
+  push:
+    branches:
+    - "main"
+jobs:
+  release:
+    name: Conditionally Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: true
+
+      - name: build and test
+        run: |
+          go test ./...
+          go build
+
+      - name: Attempt Release
+        id: release
+        run: echo "version=$(./release)" >> $GITHUB_OUTPUT
+
+      # TODO: Only run the remaining steps if this step exited with 0
+
+      - name: Push Release Commit
+        run: |
+          git push
+
+      - name: Create Github Release
+        run: |
+          gh release create ${{ steps.release.outputs.value }}
+
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
+
+      #   # check if theres an action for this
+      # - name: Log in to registry
+      #   run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # - name: Build images
+      #   env:
+      #     GH_PAT: ${{ secrets.GH_PAT }}
+      #   run: |
+      #     docker bake
+
+      # - name: Upload Release Assets
+      #   run: |
+      #     gh release upload # dist/*
