@@ -11,8 +11,8 @@ func TestUpdateVersion(t *testing.T) {
 		changeType semverChangeType
 		expected Version
 	}{
-		{"Major", Version{1, 1, 1}, major, Version{2, 1, 1}},
-		{"Minor", Version{1, 1, 1}, minor, Version{1, 2, 1}},
+		{"Major", Version{1, 1, 1}, major, Version{2, 0, 0}},
+		{"Minor", Version{1, 1, 1}, minor, Version{1, 2, 0}},
 		{"Patch", Version{1, 1, 1}, patch, Version{1, 1, 2}},
 		{"Noop",  Version{1, 1, 1}, noop,  Version{1, 1, 1}},
 	}
