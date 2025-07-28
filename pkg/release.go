@@ -74,7 +74,7 @@ func Release(configFile string) {
 		io.Copy(mw, strings.NewReader(changelog))
 	}
 
-	fmt.Fprint(os.Stderr, "New Version: ")
+	fmt.Fprint(os.Stderr, "\nNew Version: ")
 	fmt.Printf("%s\n", newVersion.String())
 }
 
