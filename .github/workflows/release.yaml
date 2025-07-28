@@ -37,6 +37,7 @@ jobs:
         if: steps.release.outcome == 'success'
         run: |
           git push
+          git push --tags
 
       - name: Create GitHub Release
         if: steps.release.outcome == 'success'
