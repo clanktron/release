@@ -3,16 +3,19 @@ package release
 import (
 	"fmt"
 	"log"
+	"os"
+	"io"
+	"strings"
 	"os/exec"
 
 	git "github.com/go-git/go-git/v6"
 )
 
 func Release(configFile string) {
-	repo, err := git.PlainOpen(".")
-	if err != nil {
-		log.Fatalf("Failed to open repository: %v", err)
-	}
+
+	var err error
+
+	parseFlags()
 
 	config := DefaultConfig
 	if configFile != "" {
@@ -23,12 +26,15 @@ func Release(configFile string) {
 		}
 	}
 
+	repo, err := git.PlainOpen(".")
+	if err != nil {
+		log.Fatalf("Failed to open repository: %v", err)
+	}
 	if err := workingTreeClean(repo); err != nil {
 		log.Fatalf("uncommitted changes detected, exiting...")
 	}
 
 	log.Println("getting latest release...")
-
 	startingCommit, err := getCurrentHead(repo, config.ReleaseBranch)
 	currentVersion, commitsSinceRelease := getLatestRelease(repo, startingCommit, config.TagFormat)
 	log.Printf("current version is %s\n", currentVersion)
@@ -44,18 +50,32 @@ func Release(configFile string) {
 		log.Fatalf("error validating new tag against repo: %v", err)
 	}
 
-	if config.VersionCommand != "" {
-		if repoVersionProcedure(config.VersionCommand) != nil {
-			log.Fatalf("version increment command failed - exiting...")
+	changelog := generateChangelog(commitsSinceRelease)
+
+	if *dryrun {
+		log.Printf("dry-run enabled - version procedure and git operations will be skipped, changelog will not be written to disk")
+		fmt.Fprint(os.Stderr, changelog)
+	} else {
+		if config.VersionCommand != "" {
+			if repoVersionProcedure(config.VersionCommand) != nil {
+				log.Fatalf("version increment command failed - exiting...")
+			}
 		}
+		log.Println("creating release commit and tagging...")
+		if CreateRelease(repo, newVersion.String(), config.Git) != nil {
+			log.Fatalf("failed to properly create release commit/tag - exiting...")
+		}
+		file, err := os.Create("changelog.txt")
+		if err != nil {
+			log.Fatalf("failed to write changelog.txt: %v", err)
+		}
+		defer file.Close()
+		mw := io.MultiWriter(os.Stderr, file)
+		io.Copy(mw, strings.NewReader(changelog))
 	}
 
-	log.Println("creating release commit and tagging...")
-	if CreateRelease(repo, newVersion.String(), config.Git) != nil {
-		log.Fatalf("failed to properly create release commit/tag - exiting...")
-	}
-
-	fmt.Print(generateChangelog(commitsSinceRelease))
+	fmt.Fprint(os.Stderr, "New Version: ")
+	fmt.Printf("%s\n", newVersion.String())
 }
 
 // update version files/run external program
