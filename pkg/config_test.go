@@ -26,6 +26,6 @@ versionCommand: "incrementVersion"`
 	}
 
 	if result != expected {
-		t.Errorf("Changelog does not match expected output.\nExpected:\n%s\nGot:\n%s", expected, result)
+		t.Errorf("Changelog does not match expected output.\nExpected:\n%v\nGot:\n%v", expected, result)
 	}
 }

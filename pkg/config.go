@@ -7,20 +7,23 @@ import (
 )
 
 type Config struct {
-    ReleaseBranch  string    `yaml:"releaseBranch"`
-    TagFormat      string    `yaml:"tagFormat"`
-    Git            GitConfig `yaml:"git"`
-    VersionCommand string    `yaml:"versionCommand"`
+	ReleaseBranch           string    `yaml:"releaseBranch"`
+	TagFormat               string    `yaml:"tagFormat"`
+	Git                     GitConfig `yaml:"git"`
+	VersionCommand          string    `yaml:"versionCommand"`
+	DryRun                  bool      `yaml:"dryRun"`
+	Verbose                 bool      `yaml:"verbose"`
+	AllowUncleanWorkingTree bool      `yaml:"allowUncleanWorkingTree"`
 }
 
 type GitConfig struct {
-    Author string `yaml:"author"`
-    Email  string `yaml:"email"`
+	Author string `yaml:"author"`
+	Email  string `yaml:"email"`
 }
 
 var defaultConfigFiles = map[string]bool{
 	".git-release.yaml": true,
-	".git-release.yml": true,
+	".git-release.yml":  true,
 }
 
 var DefaultConfig = Config{
@@ -30,10 +33,10 @@ var DefaultConfig = Config{
 		Author: "Release",
 		Email:  "release@example.com",
 	},
-	VersionCommand: "",
 }
 
-func LoadConfig(path string) (config Config, err error) {
+// 
+func LoadConfig(path string) (config Config, file string, err error) {
 	// check if any default config files exist
 	if path == "" {
 		for file := range defaultConfigFiles {
@@ -44,19 +47,20 @@ func LoadConfig(path string) (config Config, err error) {
 			}
 		}
 		if path == "" {
-			return DefaultConfig, nil
+			return DefaultConfig, path, nil
 		}
 	}
 	// load specified config
 	_, err = os.Stat(path)
 	if err != nil {
-		return Config{}, err
+		return Config{}, path, err
 	}
 	data, err := readConfigFile(path)
 	if err != nil {
-		return Config{}, err
+		return Config{}, path, err
 	}
-	return parseConfig(data)
+	config, err = parseConfig(data)
+	return config, path, err
 }
 
 func readConfigFile(path string) (bytes []byte, err error) {

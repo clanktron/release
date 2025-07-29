@@ -56,7 +56,7 @@ versionCommand: "incrementVersion"
 	}
 	tmpFile.Close()
 
-	cfg, err := LoadConfig(tmpFile.Name())
+	cfg, _, err := LoadConfig(tmpFile.Name())
 	if err != nil {
 		t.Fatalf("LoadConfig failed: %v", err)
 	}
