@@ -57,7 +57,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create ${{ steps.release.outputs.version }}
-
-      - name: Upload Release Assets
-        run: |
           gh release upload ${{ steps.release.outputs.version }} dist/*
