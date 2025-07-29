@@ -11,19 +11,13 @@ import (
 	git "github.com/go-git/go-git/v6"
 )
 
-func Release(configFile string) {
-
-	var err error
+func Release() {
 
 	parseFlags()
 
-	config := DefaultConfig
-	if configFile != "" {
-		log.Printf("sourcing config file %s...", configFile)
-		config, err = LoadConfig(configFile)
-		if err != nil {
-			log.Fatalf("error sourcing config file: %s", err.Error())
-		}
+	config, err := LoadConfig(*configFile)
+	if err != nil {
+		log.Fatalf("error sourcing config file: %v", err)
 	}
 
 	repo, err := git.PlainOpen(".")
@@ -36,6 +30,9 @@ func Release(configFile string) {
 
 	log.Println("getting latest release...")
 	startingCommit, err := getCurrentHead(repo, config.ReleaseBranch)
+	if err != nil {
+		log.Fatalf("failed to get head commit, exiting...")
+	}
 	currentVersion, commitsSinceRelease := getLatestRelease(repo, startingCommit, config.TagFormat)
 	log.Printf("current version is %s\n", currentVersion)
 

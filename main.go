@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	release.Release("")
+	release.Release()
 }

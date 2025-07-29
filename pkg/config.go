@@ -1,8 +1,9 @@
 package release
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -17,6 +18,11 @@ type GitConfig struct {
     Email  string `yaml:"email"`
 }
 
+var defaultConfigFiles = map[string]bool{
+	".git-release.yaml": true,
+	".git-release.yml": true,
+}
+
 var DefaultConfig = Config{
 	ReleaseBranch: "main",
 	TagFormat:     "{version}",
@@ -27,7 +33,25 @@ var DefaultConfig = Config{
 	VersionCommand: "",
 }
 
-func LoadConfig(path string) (Config, error) {
+func LoadConfig(path string) (config Config, err error) {
+	// check if any default config files exist
+	if path == "" {
+		for file := range defaultConfigFiles {
+			_, err = os.Stat(file)
+			if err == nil {
+				path = file
+				break
+			}
+		}
+		if path == "" {
+			return DefaultConfig, nil
+		}
+	}
+	// load specified config
+	_, err = os.Stat(path)
+	if err != nil {
+		return Config{}, err
+	}
 	data, err := readConfigFile(path)
 	if err != nil {
 		return Config{}, err
@@ -36,10 +60,6 @@ func LoadConfig(path string) (Config, error) {
 }
 
 func readConfigFile(path string) (bytes []byte, err error) {
-	_, err = os.Stat(path)
-	if err != nil {
-		return bytes, err
-	}
 	bytes, err = os.ReadFile(path)
 	if err != nil {
 		return bytes, err
