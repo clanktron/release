@@ -7,10 +7,11 @@ variable "cache_settings" {
   ]
 }
 
+variable "registry" { default = "ghcr.io" }
 variable "org" { default = "clanktron" }
 variable "repo" { default = "git-release" }
 variable "tag" { default = "dev" }
-variable "image" { default = "${org}/${repo}"}
+variable "image" { default = "${registry}/${org}/${repo}"}
 variable "ref" { default = "${image}:${tag}"}
 
 target "default" {
