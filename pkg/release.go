@@ -53,10 +53,8 @@ func Release() {
 		log.Printf("dry-run enabled - version procedure and git operations will be skipped, changelog will not be written to disk")
 		fmt.Fprint(os.Stderr, changelog)
 	} else {
-		if config.VersionCommand != "" {
-			if repoVersionProcedure(config.VersionCommand) != nil {
-				log.Fatalf("version increment command failed - exiting...")
-			}
+		if repoVersionProcedure(config.VersionCommand) != nil {
+			log.Fatalf("version increment command failed - exiting...")
 		}
 		log.Println("creating release commit and tagging...")
 		if CreateRelease(repo, newVersion.String(), config.Git) != nil {
@@ -77,5 +75,8 @@ func Release() {
 
 // update version files/run external program
 func repoVersionProcedure(command string) error {
-	return exec.Command("sh", "-c", command).Run()
+	if command != "" {
+		return exec.Command("sh", "-c", command).Run()
+	}
+	return nil
 }
