@@ -21,7 +21,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: true
-          fetch-tags: true
+          fetch-depth: 0
 
       - name: build and test
         run: |
