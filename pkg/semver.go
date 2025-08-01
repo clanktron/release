@@ -1,7 +1,8 @@
 package release
 
 import (
-	"strings"
+	"slices"
+	"release/pkg/conventionalcommit"
 	"github.com/go-git/go-git/v6/plumbing/object"
 )
 
@@ -18,25 +19,27 @@ func (s semverChange) String() string {
 	return [...]string{"n/a", "patch", "minor", "major"}[s]
 }
 
-func parseSemverChange(commits []*object.Commit) semverChange {
-	changeType := noop
+func aggregateSemverChange(commitConfig conventionalcommit.Config, commits []*object.Commit) semverChange {
+	aggregateChange := noop
 	for _, commit := range commits {
-		commitChangeType := parseCommitVersionChange(commit)
-		if commitChangeType > changeType {
-			changeType = commitChangeType
+		change := parseSemverChange(commitConfig, commit)
+		if change > aggregateChange {
+			aggregateChange = change
 		}
 	}
-	return changeType
+	return aggregateChange
 }
 
-
-func parseCommitVersionChange(commit *object.Commit) semverChange {
-	if strings.Contains(commit.Message, "fix") {
-		return patch
-	} else if strings.Contains(commit.Message, "feat") {
-		return minor
-	} else if strings.Contains(commit.Message, "BREAKING CHANGE") {
+func parseSemverChange(commitConfig conventionalcommit.Config, commit *object.Commit) semverChange {
+	cc := conventionalcommit.ParseMessage(commit.Message)
+	if cc.Breaking {
 		return major
+	} 	
+	if slices.Contains(commitConfig.MinorTypes, cc.Type) {
+	    return minor
+	}
+	if slices.Contains(commitConfig.PatchTypes, cc.Type) {
+	    return patch
 	}
 	return noop
 }

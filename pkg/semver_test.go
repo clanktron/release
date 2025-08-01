@@ -2,28 +2,32 @@ package release
 
 import (
 	"testing"
+
+	"release/pkg/conventionalcommit"
 	"github.com/go-git/go-git/v6/plumbing/object"
 )
 
-func TestParseSemanticVersionChangeType(t *testing.T) {
-	noopCommit := &object.Commit{Message: "chore: anything that"}
-	patchCommit := &object.Commit{Message: "fix: a patch change"}
-	minorCommit := &object.Commit{Message: "feat: a minor change"}
-	majorCommit := &object.Commit{Message: "BREAKING CHANGE: a major change"}
-
-	if got := parseCommitVersionChange(patchCommit); got != patch {
-		t.Errorf("expected patch, got %v", got)
+func TestCommitSemverChange(t *testing.T) {
+	tests := []struct {
+		name     string
+		message  string
+		expected semverChange
+	}{
+		{"noop", "chore: anything that", noop},
+		{"patch", "fix: a patch change", patch},
+		{"minor", "feat: a minor change", minor},
+		{"major", "feat!: something something", major},
+		{"multiline", "feat: this is a subject\n\nThis is the body and its got some length to it.", minor},
+		{"breaking change in footer", "fix: a patch change\n\nBREAKING CHANGE: dropped support for X", major},
+		{"fix type with breaking change footer", "fix: patch level subject\n\nBREAKING CHANGE: something incompatible", major},
 	}
 
-	if got := parseCommitVersionChange(minorCommit); got != minor {
-		t.Errorf("expected minor, got %v", got)
-	}
-
-	if got := parseCommitVersionChange(majorCommit); got != major {
-		t.Errorf("expected major, got %v", got)
-	}
-
-	if got := parseCommitVersionChange(noopCommit); got != noop {
-		t.Errorf("expected none, got %v", got)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			commit := &object.Commit{Message: tt.message}
+			if got := parseSemverChange(conventionalcommit.DefaultConfig, commit); got != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
 	}
 }

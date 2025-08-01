@@ -3,6 +3,7 @@ package release
 import (
 	"os"
 	"strings"
+	"release/pkg/conventionalcommit"
 
 	"gopkg.in/yaml.v3"
 )
@@ -16,6 +17,9 @@ type Config struct {
 	DryRun                  bool      `yaml:"dryRun"`
 	Verbose                 bool      `yaml:"verbose"`
 	AllowUncleanWorkingTree bool      `yaml:"allowUncleanWorkingTree"`
+	CommitMessage conventionalcommit.Config  `yaml:"commitMessage"`
+	MinorTypes              []string  `yaml:"minorTypes"`
+	PatchTypes              []string  `yaml:"patchTypes"`
 }
 
 type GitConfig struct {
@@ -36,6 +40,7 @@ var DefaultConfig = Config{
 		Author: "Release",
 		Email:  "release@example.com",
 	},
+	CommitMessage: conventionalcommit.DefaultConfig,
 }
 
 // ReplaceVersionPlaceholder replaces the {version} placeholder in the versionCommand with the actual version.

@@ -1,6 +1,10 @@
 package release
 
-import "testing"
+import (
+	"reflect"
+	"release/pkg/conventionalcommit"
+	"testing"
+)
 
 func TestParseConfig(t *testing.T)  {
 	configYaml := `releaseBranch: test-branch
@@ -19,6 +23,7 @@ versionCommand: "incrementVersion"`
 			Email:  "releasebot@example.com",
 		},
 		VersionCommand: "incrementVersion",
+		CommitMessage: conventionalcommit.DefaultConfig,
 	}
 
 	result, err := parseConfig([]byte(configYaml))
@@ -26,7 +31,7 @@ versionCommand: "incrementVersion"`
 		t.Fatalf("failed to parse example config: %v", err)
 	}
 
-	if result != expected {
+	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("Changelog does not match expected output.\nExpected:\n%v\nGot:\n%v", expected, result)
 	}
 }
