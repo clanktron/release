@@ -15,6 +15,14 @@ type Config struct {
 	DryRun                  bool      `yaml:"dryRun"`
 	Verbose                 bool      `yaml:"verbose"`
 	AllowUncleanWorkingTree bool      `yaml:"allowUncleanWorkingTree"`
+	CommitMessage ConventionalCommitConfig  `yaml:"commitMessage"`
+	MinorTypes              []string  `yaml:"minorTypes"`
+	PatchTypes              []string  `yaml:"patchTypes"`
+}
+
+type ConventionalCommitConfig struct {
+	MinorTypes []string
+	PatchTypes []string
 }
 
 type GitConfig struct {
@@ -27,12 +35,27 @@ var defaultConfigFiles = map[string]bool{
 	".git-release.yml":  true,
 }
 
+var defaultMinorTypes = []string{
+	"feat",
+	"feature",
+}
+
+var defaultPatchTypes = []string{
+	"fix",
+	"perf",
+	"performance",
+}
+
 var DefaultConfig = Config{
 	ReleaseBranch: "main",
 	TagFormat:     "v{version}",
 	Git: GitConfig{
 		Author: "Release",
 		Email:  "release@example.com",
+	},
+	CommitMessage: ConventionalCommitConfig{
+		MinorTypes: defaultMinorTypes,
+		PatchTypes: defaultPatchTypes,
 	},
 }
 

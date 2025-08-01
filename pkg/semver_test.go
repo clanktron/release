@@ -11,19 +11,19 @@ func TestParseSemanticVersionChangeType(t *testing.T) {
 	minorCommit := &object.Commit{Message: "feat: a minor change"}
 	majorCommit := &object.Commit{Message: "BREAKING CHANGE: a major change"}
 
-	if got := parseCommitVersionChange(patchCommit); got != patch {
+	if got := parseVersionChangeType(patchCommit); got != patch {
 		t.Errorf("expected patch, got %v", got)
 	}
 
-	if got := parseCommitVersionChange(minorCommit); got != minor {
+	if got := parseVersionChangeType(minorCommit); got != minor {
 		t.Errorf("expected minor, got %v", got)
 	}
 
-	if got := parseCommitVersionChange(majorCommit); got != major {
+	if got := parseVersionChangeType(majorCommit); got != major {
 		t.Errorf("expected major, got %v", got)
 	}
 
-	if got := parseCommitVersionChange(noopCommit); got != noop {
+	if got := parseVersionChangeType(noopCommit); got != noop {
 		t.Errorf("expected none, got %v", got)
 	}
 }

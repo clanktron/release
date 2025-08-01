@@ -49,7 +49,7 @@ func Release() {
 	currentVersion, commitsSinceRelease := getLatestRelease(repo, startingCommit, config.TagFormat)
 	log.Printf("current version is %s\n", currentVersion)
 
-	changeType := parseSemverChange(commitsSinceRelease)
+	changeType := parseSemanticReleaseChangeType(config.CommitMessage, commitsSinceRelease)
 	if changeType == noop {
 		log.Fatalf("changes since last release are insufficient - cancelling release...")
 	}
