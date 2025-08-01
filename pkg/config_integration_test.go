@@ -1,8 +1,11 @@
 //go:build integration
+
 package release
 
 import (
 	"os"
+	"reflect"
+	"release/pkg/conventionalcommit"
 	"testing"
 )
 
@@ -70,9 +73,10 @@ versionCommand: "incrementVersion"
 			Email:  "releasebot@example.com",
 		},
 		VersionCommand: "incrementVersion",
+		CommitMessage: conventionalcommit.DefaultConfig,
 	}
 
-	if cfg != expected {
+	if !reflect.DeepEqual(cfg, expected) {
 		t.Errorf("LoadConfig returned unexpected result.\nExpected: %+v\nGot: %+v", expected, cfg)
 	}
 }
