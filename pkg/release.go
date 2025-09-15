@@ -1,13 +1,13 @@
 package release
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
-	"io"
-	"encoding/json"
-	"strings"
 	"os/exec"
+	"strings"
 
 	git "github.com/go-git/go-git/v6"
 )
@@ -67,7 +67,7 @@ func Release() {
 		log.Printf("dry-run enabled - version procedure and git operations will be skipped, changelog will not be written to disk")
 		fmt.Fprint(os.Stderr, changelog)
 	} else {
-		if repoVersionProcedure(config.VersionCommand) != nil {
+		if repoVersionProcedure(config.VersionCommand, newVersionTag) != nil {
 			log.Fatalf("version increment command failed - exiting...")
 		}
 		log.Println("creating release commit and tagging...")
@@ -88,8 +88,10 @@ func Release() {
 }
 
 // update version files/run external program
-func repoVersionProcedure(command string) error {
+func repoVersionProcedure(command string, version string) error {
 	if command != "" {
+		// Replace {version} placeholder with actual version
+		command = ReplaceVersionPlaceholder(command, version)
 		return exec.Command("sh", "-c", command).Run()
 	}
 	return nil

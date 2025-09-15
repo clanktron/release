@@ -2,6 +2,7 @@ package release
 
 import (
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -35,7 +36,11 @@ var DefaultConfig = Config{
 	},
 }
 
-// 
+// ReplaceVersionPlaceholder replaces the {version} placeholder in the versionCommand with the actual version.
+func ReplaceVersionPlaceholder(versionCommand string, version string) string {
+	return strings.ReplaceAll(versionCommand, "{version}", version)
+}
+
 func LoadConfig(path string) (config Config, file string, err error) {
 	// check if any default config files exist
 	if path == "" {
