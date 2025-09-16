@@ -15,7 +15,7 @@ func (v Version) String() string {
 	return fmt.Sprintf("%s.%s.%s", strconv.Itoa(v.Major), strconv.Itoa(v.Minor), strconv.Itoa(v.Patch))
 }
 
-func updateVersion(version Version, changeType semverChangeType) Version {
+func updateVersion(version Version, changeType semverChange) Version {
 	switch changeType {
 	case major:
 		version.Major++

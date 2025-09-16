@@ -5,23 +5,23 @@ import (
 	"github.com/go-git/go-git/v6/plumbing/object"
 )
 
-type semverChangeType int
+type semverChange int
 
 const (
-	noop semverChangeType = iota
+	noop semverChange = iota
 	patch
 	minor
 	major
 )
 
-func (s semverChangeType) String() string {
+func (s semverChange) String() string {
 	return [...]string{"n/a", "patch", "minor", "major"}[s]
 }
 
-func parseSemanticReleaseChangeType(commits []*object.Commit) semverChangeType {
+func parseSemverChange(commits []*object.Commit) semverChange {
 	changeType := noop
 	for _, commit := range commits {
-		commitChangeType := parseSemanticVersionChangeType(commit)
+		commitChangeType := parseCommitVersionChange(commit)
 		if commitChangeType > changeType {
 			changeType = commitChangeType
 		}
@@ -30,7 +30,7 @@ func parseSemanticReleaseChangeType(commits []*object.Commit) semverChangeType {
 }
 
 
-func parseSemanticVersionChangeType(commit *object.Commit) semverChangeType {
+func parseCommitVersionChange(commit *object.Commit) semverChange {
 	if strings.Contains(commit.Message, "fix") {
 		return patch
 	} else if strings.Contains(commit.Message, "feat") {

@@ -8,7 +8,7 @@ func TestUpdateVersion(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    Version
-		changeType semverChangeType
+		changeType semverChange
 		expected Version
 	}{
 		{"Major", Version{1, 1, 1}, major, Version{2, 0, 0}},
