@@ -29,7 +29,7 @@ var defaultConfigFiles = map[string]bool{
 
 var DefaultConfig = Config{
 	ReleaseBranch: "main",
-	TagFormat:     "v{version}",
+	TagFormat:     "{version}",
 	Git: GitConfig{
 		Author: "Release",
 		Email:  "release@example.com",
