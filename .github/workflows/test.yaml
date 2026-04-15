@@ -1,0 +1,21 @@
+name: Test
+
+on:
+  workflow_call:
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: true
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+
+      - name: Unit Tests
+        run: make unit-test
