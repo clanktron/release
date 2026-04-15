@@ -53,6 +53,6 @@ func parseVersionString(versionString string) (version Version, err error) {
 	return version, err
 }
 
-func createVersionTag(version Version, tagFormat string) string {
-	return strings.ReplaceAll(tagFormat, "{version}", version.String())
+func createVersionString(version Version, format string) string {
+	return strings.ReplaceAll(format, "{version}", version.String())
 }

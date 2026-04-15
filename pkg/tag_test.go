@@ -12,7 +12,7 @@ func TestCreateVersionTag(t *testing.T) {
 
 	expected := "version 3.29.4"
 
-	result := createVersionTag(version, tagFormat)
+	result := createVersionString(version, tagFormat)
 
 	if expected != result {
 		t.Errorf("Tag does not match expected output.\nExpected:\n%s\nGot:\n%s", expected, result)

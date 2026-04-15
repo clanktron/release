@@ -13,6 +13,7 @@ versionCommand: "incrementVersion"`
 	var expected = Config{
 		ReleaseBranch: "test-branch",
 		TagFormat:     "v{version}",
+		TagOnly: true,
 		Git: GitConfig{
 			Author: "ReleaseBot",
 			Email:  "releasebot@example.com",
