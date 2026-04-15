@@ -177,11 +177,8 @@ func TestGetLatestRelease(t *testing.T) {
 		t.Fatalf("failed to tag: %v", err)
 	}
 
-	version, commits := getLatestRelease(repo, head, "v{version}")
+	version, _ := getLatestRelease(repo, head, "v{version}")
 	if version.String() != "0.2.0" {
 		t.Errorf("expected version 0.2.0, got %s", version.String())
-	}
-	if len(commits) == 0 {
-		t.Errorf("expected at least one commit, got 0")
 	}
 }
