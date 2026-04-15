@@ -56,7 +56,6 @@ func getLatestRelease(repo *git.Repository, head *object.Commit, tagFormat strin
 	tagMap := buildTagMap(repo, tagFormat)
 	commitIterator := object.NewCommitPreorderIter(head, nil, nil)
 	commitIterator.ForEach(func(c *object.Commit) error {
-		childCommits = append(childCommits, c)
 	    if tagString, ok := tagMap[c.Hash]; ok {
 			currentVersion, err := parseVersionFromTag(tagString, tagFormat)
 			if err == nil {
@@ -64,6 +63,7 @@ func getLatestRelease(repo *git.Repository, head *object.Commit, tagFormat strin
 				return errors.New("break iterator - found valid release tag")
 			}
 	    }
+		childCommits = append(childCommits, c)
 	    return nil
 	})
 	return version, childCommits
