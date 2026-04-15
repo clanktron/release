@@ -82,28 +82,16 @@ func validateTag(repo *git.Repository, tag string) error {
 	}
 }
 
-func CreateRelease(repo *git.Repository, tag string, gitConfig GitConfig) error {
+func createReleaseCommit(repo *git.Repository, body string, gitConfig GitConfig) (plumbing.ObjectID, error) {
 	w, err := repo.Worktree()
 	if err != nil || w == nil {
-		return fmt.Errorf("error getting worktree: %v", err)
+		return plumbing.ObjectID{}, fmt.Errorf("error getting worktree: %v", err)
 	}
 	err = w.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
-		return fmt.Errorf("error staging files: %v", err)
+		return plumbing.ObjectID{}, fmt.Errorf("error staging files: %v", err)
 	}
-	commitHash, err := createReleaseCommit(w, tag, gitConfig)
-	if err != nil {
-		return fmt.Errorf("error creating release commit: %v", err)
-	}
-	_, err = createReleaseTag(repo, tag, commitHash, gitConfig)
-	if err != nil {
-		return fmt.Errorf("error tagging commit: %v", err)
-	}
-	return nil
-}
-
-func createReleaseCommit(w *git.Worktree, tag string, gitConfig GitConfig) (plumbing.ObjectID, error) {
-	commitHash, err := w.Commit(fmt.Sprintf("chore(release): %s", tag), &git.CommitOptions{
+	commitHash, err := w.Commit(fmt.Sprintf("chore(release): %s", body), &git.CommitOptions{
 		AllowEmptyCommits: true,
 		Author: &object.Signature{
 			Name:  gitConfig.Author,

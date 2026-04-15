@@ -10,6 +10,7 @@ import (
 type Config struct {
 	ReleaseBranch           string    `yaml:"releaseBranch"`
 	TagFormat               string    `yaml:"tagFormat"`
+	TagOnly 				bool 	  `yaml:"tagOnly"`
 	Git                     GitConfig `yaml:"git"`
 	VersionCommand          string    `yaml:"versionCommand"`
 	DryRun                  bool      `yaml:"dryRun"`
@@ -30,6 +31,7 @@ var defaultConfigFiles = map[string]bool{
 var DefaultConfig = Config{
 	ReleaseBranch: "main",
 	TagFormat:     "{version}",
+	TagOnly: true,
 	Git: GitConfig{
 		Author: "Release",
 		Email:  "release@example.com",

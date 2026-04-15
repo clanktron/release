@@ -132,27 +132,6 @@ func TestValidateTag(t *testing.T) {
 	})
 }
 
-func TestCreateRelease(t *testing.T) {
-	repo, _ := setupRepo(t)
-	gitConfig := GitConfig{
-		Author: "ReleaseBot",
-		Email:  "release@example.com",
-	}
-	tag := "v1.0.0"
-
-	err := CreateRelease(repo, tag, gitConfig)
-	if err != nil {
-		t.Fatalf("CreateRelease failed: %v", err)
-	}
-	ref, err := repo.Tag(tag)
-	if err != nil {
-		t.Fatalf("expected tag to exist, got error: %v", err)
-	}
-	if ref.Name().Short() != tag {
-		t.Errorf("expected tag name %s, got %s", tag, ref.Name().Short())
-	}
-}
-
 func TestGetLatestRelease(t *testing.T) {
 	repo, dir := setupRepo(t)
 
