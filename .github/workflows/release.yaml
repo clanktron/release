@@ -36,6 +36,6 @@ jobs:
         continue-on-error: true
 
       - name: Push Release Commit
-        if: ${{ steps.release_check.outcome == 'success' }}
+        if: ${{ steps.release.outcome == 'success' }}
         run: |
           git push --tags
