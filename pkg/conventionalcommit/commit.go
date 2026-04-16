@@ -17,7 +17,7 @@ func ParseMessage(msg string) ConventionalCommit {
 	header := lines[0]
 
 	// Regex to match: type(scope)!: description
-	re := regexp.MustCompile(`^(\w+)(?:[\(\[]([^)\\]]+)[\)\]])?(!)?:\s*(.+)$`)
+	re := regexp.MustCompile(`^(\w+)(?:[\(\[]([^\)\]]+)[\)\]])?(!)?:\s*(.+)$`)
 	matches := re.FindStringSubmatch(header)
 
 	var cc ConventionalCommit
