@@ -19,4 +19,5 @@ var defaultPatchTypes = []string{
 	"fix",
 	"perf",
 	"performance",
+	"revert",
 }
