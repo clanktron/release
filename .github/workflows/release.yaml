@@ -33,8 +33,9 @@ jobs:
         run: |
           version=$(./release)
           echo "version=$version" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
       - name: Push Release Commit
+        if: ${{ steps.release_check.outcome == 'success' }}
         run: |
-          git push
           git push --tags
